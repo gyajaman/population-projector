@@ -734,7 +734,7 @@ class GlobeViz {
       // Add newcomers as children (births); age resting figures forward via surplus counting
       for (let i = 1; i < T; i++) {
         const p = this.crowd.get(i);
-        if (!p || p.phase === 'leave') {
+        if (!p) {
           this._addCrowd(i, positions[i], 'child', now, Math.random() * 0.3);
         }
       }
