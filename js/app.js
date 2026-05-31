@@ -177,7 +177,7 @@ function renderPanel() {
     tag.textContent = `Below the 2.1 replacement line — each generation shrinks`;
   } else {
     tag.className = 'tfr-tag above';
-    tag.textContent = `At or above replacement — population sustains`;
+    tag.textContent = `At or above replacement — population sustains itself`;
   }
 
   // stat grid
@@ -198,16 +198,27 @@ function renderNarrative(proj, stat, start) {
   const change = (end.total - start.total) / start.total * 100;
   const el = $('#narr');
   if (c.tfr < REPLACEMENT_TFR) {
-    const verb = change < 0 ? 'fall' : 'still grow briefly, then decline';
-    el.innerHTML = `At a fertility rate of <b>${c.tfr.toFixed(2)}</b> — far under the
-      <b>2.1</b> needed to replace a generation — ${c.label} is projected to
-      <span class="hot">${change < 0 ? 'shrink ' + Math.abs(change).toFixed(0) + '%' : 'peak and reverse'}</span>
-      by 2100, from <b>${fmtPop(start.total)}</b> to <b>${fmtPop(end.total)}</b>.
-      Its population peaks in <b>${proj.peakYear}</b>.`;
+    const gap = REPLACEMENT_TFR - c.tfr;
+    const dist = gap < 0.1 ? 'slightly below' : gap < 0.4 ? 'below' : gap < 0.8 ? 'well below' : 'far below';
+    if (change < 0) {
+      const peakNote = proj.peakYear > START_YEAR
+        ? ` Its population peaked in <b>${proj.peakYear}</b>.`
+        : '';
+      el.innerHTML = `At a fertility rate of <b>${c.tfr.toFixed(2)}</b> — ${dist} the <b>2.1</b>
+        needed to replace a generation — ${c.label} is projected to
+        <span class="hot">shrink ${Math.abs(change).toFixed(0)}%</span>
+        by 2100, from <b>${fmtPop(start.total)}</b> to <b>${fmtPop(end.total)}</b>.${peakNote}`;
+    } else {
+      el.innerHTML = `At a fertility rate of <b>${c.tfr.toFixed(2)}</b> — ${dist} the <b>2.1</b>
+        needed to replace a generation — ${c.label}'s population will peak around
+        <b>${proj.peakYear}</b>, then <span class="hot">decline</span>, reaching
+        <b>${fmtPop(end.total)}</b> by 2100 — still up <b>${change.toFixed(0)}%</b>
+        from today due to population momentum.`;
+    }
   } else {
     el.innerHTML = `With a fertility rate of <b>${c.tfr.toFixed(2)}</b>, ${c.label}'s population
-      is projected to move from <b>${fmtPop(start.total)}</b> to <b>${fmtPop(end.total)}</b>
-      by 2100 — a ${change >= 0 ? 'rise' : 'fall'} of <b>${Math.abs(change).toFixed(0)}%</b>.`;
+      is projected to grow from <b>${fmtPop(start.total)}</b> to <b>${fmtPop(end.total)}</b>
+      by 2100 — a rise of <b>${change.toFixed(0)}%</b>.`;
   }
 }
 

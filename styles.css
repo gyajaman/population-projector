@@ -64,7 +64,7 @@ body{font-family:var(--mono); color:var(--ink); overflow:hidden; background:#f5f
 /* ── stats panel ──────────────────────────────────────────────────────────── */
 #panel{
   position:fixed; top:80px; right:16px; z-index:5; width:380px;
-  max-height:calc(100% - 116px);
+  max-height:calc(100% - 96px);
   background:var(--panel-bg); border:1px solid var(--line);
   border-radius:8px; box-shadow:var(--shadow);
   overflow:hidden auto; display:flex; flex-direction:column;
