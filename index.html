@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Population Projector — The Shape of a Shrinking World</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div id="globe"></div>
+
+  <!-- top bar -->
+  <header class="topbar">
+    <div class="brand">
+      <h1>Population <span class="mark">Projector</span></h1>
+      <div class="sub">Birth rates are below replacement across most of the world — see what that means for every country through 2100.</div>
+    </div>
+    <div class="scale-note">
+      <b>1 figure = 1 million people</b><br>
+      drag to orbit · scroll to zoom
+    </div>
+  </header>
+
+  <!-- left rail -->
+  <nav id="rail">
+    <div class="rail-head">Countries · TFR · to 2100</div>
+    <div class="rail-scroll" id="railScroll"></div>
+  </nav>
+
+  <!-- stats panel -->
+  <aside id="panel">
+    <div class="panel-empty" id="panelEmpty">
+      <h2>Select a country</h2>
+      Click a glowing country on the globe, or choose one from the list on the left.
+      Tiny figures will rain down — each one is one million people, colored by age.
+      <div class="tip">Then press play to run the population forward to 2100 and watch the
+      age pyramid invert as low birth rates take hold.</div>
+    </div>
+
+    <div class="pb" id="panelBody">
+      <div class="ch">
+        <span class="iso" id="chIso">—</span>
+        <span class="nm" id="chName">—</span>
+        <span class="yr" id="chYear">2025</span>
+        <button class="close-btn" id="closePanel" title="Back to globe">✕</button>
+      </div>
+
+      <div class="pop-big">
+        <span class="v" id="popVal">—</span>
+        <span class="net" id="popNet">—</span>
+      </div>
+
+      <div class="tfr-wrap">
+        <div class="tfr-top">
+          <span class="lab">Fertility rate (children per woman)</span>
+          <span class="val" id="tfrVal">—</span>
+        </div>
+        <div class="gauge">
+          <div class="fill" id="tfrFill"></div>
+          <div class="repl" id="tfrRepl"></div>
+        </div>
+        <div class="tfr-tag" id="tfrTag"></div>
+      </div>
+
+      <div>
+        <div class="pyr-head">
+          <span class="t">Population by age</span>
+          <span class="s">youngest at base</span>
+        </div>
+        <canvas id="pyramid"></canvas>
+      </div>
+
+      <div class="grid">
+        <div class="cell"><div class="k">Median age</div><div class="v" id="sMedian">—</div></div>
+        <div class="cell"><div class="k">Aged 65+</div><div class="v" id="sO65">—</div></div>
+        <div class="cell"><div class="k">Under 15</div><div class="v" id="sChild">—</div></div>
+        <div class="cell"><div class="k">Old-age dependency</div><div class="v" id="sDep">—</div></div>
+        <div class="cell"><div class="k">Births / yr</div><div class="v" id="sBirths">—</div></div>
+        <div class="cell"><div class="k">Deaths / yr</div><div class="v" id="sDeaths">—</div></div>
+      </div>
+
+      <div class="narr" id="narr"></div>
+    </div>
+  </aside>
+
+  <!-- timeline -->
+  <div id="timeline">
+    <div class="tl-row">
+      <button class="play" id="playBtn" title="Play / pause">
+        <svg viewBox="0 0 16 16" id="playIcon"><path d="M3 2l11 6-11 6z"/></svg>
+      </button>
+      <div class="tl-mid">
+        <div class="tl-year">
+          <span class="y" id="yearLabel">2025</span>
+          <span class="delta">running projection</span>
+        </div>
+        <input type="range" id="yearSlider" min="2025" max="2100" step="1" value="2025">
+      </div>
+      <div class="scn">
+        <button data-s="current" class="on">If trends hold</button>
+        <button data-s="recovery">UN recovery</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- legend -->
+  <div id="legend">
+    <div class="lh">Each figure · age</div>
+    <div class="lg"><span class="sw" style="background:var(--child)"></span> Children · 0–14</div>
+    <div class="lg"><span class="sw" style="background:var(--young)"></span> Young adults · 15–39</div>
+    <div class="lg"><span class="sw" style="background:var(--adult)"></span> Adults · 40–64</div>
+    <div class="lg"><span class="sw" style="background:var(--senior)"></span> Seniors · 65+</div>
+  </div>
+
+  <div id="toast"></div>
+
+  <!-- loader -->
+  <div id="loader">
+    <div class="spin"></div>
+    <div class="lt">Population Projector</div>
+    <div class="lp" id="loaderProg">Initializing…</div>
+  </div>
+
+  <!-- libs -->
+  <script src="https://unpkg.com/three@0.128.0/build/three.min.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+  <script src="https://unpkg.com/three@0.128.0/examples/js/utils/BufferGeometryUtils.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/d3@7/dist/d3.min.js"></script>
+  <script src="https://unpkg.com/topojson-client@3/dist/topojson-client.min.js"></script>
+  <!-- app -->
+  <script src="js/data.js"></script>
+  <script src="js/projection.js"></script>
+  <script src="js/globe.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
