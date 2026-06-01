@@ -322,12 +322,34 @@ function toast(msg) {
   _toastT = setTimeout(() => t.classList.remove('show'), 2600);
 }
 
+// ---------- theme -----------------------------------------------------------
+function applyTheme(dark, fromToggle = false) {
+  document.documentElement.dataset.theme = dark ? 'dark' : 'light';
+  if (fromToggle) localStorage.setItem('theme', dark ? 'dark' : 'light');
+  if (globe) globe.setTheme(dark);
+}
+
+function initTheme() {
+  const saved = localStorage.getItem('theme');
+  const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const dark = saved ? saved === 'dark' : prefersDark;
+  applyTheme(dark, false);
+}
+
 // ---------- boot ------------------------------------------------------------
 async function boot() {
   globe = new GlobeViz($('#globe'));
   globe.onSelect = (name) => selectCountry(name, false);
 
+  initTheme();
+
   buildRail();
+
+  // theme toggle
+  $('#themeToggle').addEventListener('click', () => {
+    const isDark = document.documentElement.dataset.theme === 'dark';
+    applyTheme(!isDark, true);
+  });
 
   // timeline wiring
   $('#closePanel').addEventListener('click', deselect);

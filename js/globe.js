@@ -26,6 +26,9 @@ class GlobeViz {
     this.crowdScale = 1;             // adaptive: shrinks for densely-packed countries
     this.clock = new THREE.Clock();
     this._ready = false; // set true after loadGeo so _animate skips work until then
+    this.darkMode = false;
+    this.rimMat = null;
+    this.starField = null;
     this._initScene();
   }
 
@@ -63,8 +66,8 @@ class GlobeViz {
     // rim outline — a slightly larger back-facing sphere shows only at the limb,
     // drawing a clean edge around the whole globe.
     const rimGeo = new THREE.SphereGeometry(GLOBE_R * 1.006, 96, 64);
-    const rimMat = new THREE.MeshBasicMaterial({ color: 0x9aa4b2, side: THREE.BackSide });
-    this.scene.add(new THREE.Mesh(rimGeo, rimMat));
+    this.rimMat = new THREE.MeshBasicMaterial({ color: 0x9aa4b2, side: THREE.BackSide });
+    this.scene.add(new THREE.Mesh(rimGeo, this.rimMat));
 
     // invisible pick sphere
     this.pickSphere = new THREE.Mesh(
@@ -100,6 +103,8 @@ class GlobeViz {
     });
 
     window.addEventListener('resize', () => this._resize());
+    this.starField = this._addStars();
+    this.starField.visible = false; // shown only in dark mode
     this._animate();
   }
 
@@ -120,9 +125,11 @@ class GlobeViz {
     const g = new THREE.BufferGeometry();
     g.setAttribute('position', new THREE.BufferAttribute(pos, 3));
     g.setAttribute('color', new THREE.BufferAttribute(col, 3));
-    this.scene.add(new THREE.Points(g, new THREE.PointsMaterial({
+    const pts = new THREE.Points(g, new THREE.PointsMaterial({
       size: 0.09, sizeAttenuation: true, vertexColors: true, transparent: true, opacity: 0.85,
-    })));
+    }));
+    this.scene.add(pts);
+    return pts;
   }
 
   // ---- figures -------------------------------------------------------------
@@ -520,22 +527,23 @@ class GlobeViz {
     // Paint land as light gray on a white (ocean) equirectangular canvas, then
     // map it onto the base sphere. offset.x aligns the texture with the
     // outlines, which are placed directly from lat/lng via _latLngToVec.
+    const dk = this.darkMode;
     const W = 2048, H = 1024;
     const cv = document.createElement('canvas');
     cv.width = W; cv.height = H;
     const ctx = cv.getContext('2d');
-    ctx.fillStyle = '#ffffff';          // ocean
+    ctx.fillStyle = dk ? '#0d2040' : '#ffffff'; // ocean — medium navy
     ctx.fillRect(0, 0, W, H);
     const proj = d3.geoEquirectangular()
       .scale(W / (2 * Math.PI))
       .translate([W / 2, H / 2]);
     const path = d3.geoPath(proj, ctx);
-    // All land — light gray base
-    ctx.fillStyle = '#dde1e8';
+    // All land — base (slightly lighter than ocean)
+    ctx.fillStyle = dk ? '#1e3a5c' : '#dde1e8';
     ctx.beginPath(); path(this.landFeat); ctx.fill();
 
     // Data countries — slightly more defined (interactive)
-    ctx.fillStyle = '#b8c0ce';
+    ctx.fillStyle = dk ? '#264870' : '#b8c0ce';
     for (const f of this.countryFeats) {
       ctx.beginPath(); path(f); ctx.fill();
     }
@@ -546,9 +554,9 @@ class GlobeViz {
     const patCv = document.createElement('canvas');
     patCv.width = patSz; patCv.height = patSz;
     const pc = patCv.getContext('2d');
-    pc.fillStyle = '#dde1e8';
+    pc.fillStyle = dk ? '#1e3a5c' : '#dde1e8';
     pc.fillRect(0, 0, patSz, patSz);
-    pc.strokeStyle = 'rgba(130,142,162,0.55)';
+    pc.strokeStyle = dk ? 'rgba(90,130,175,0.55)' : 'rgba(130,142,162,0.55)';
     pc.lineWidth = 1;
     pc.beginPath();
     pc.moveTo(0, 0);       pc.lineTo(patSz, patSz);
@@ -567,8 +575,21 @@ class GlobeViz {
     tex.wrapS = THREE.RepeatWrapping;
     tex.offset.x = 0.25;                // align seam with the 3D outlines
     tex.anisotropy = 4;
+    this.baseMat.color.set(0xffffff); // always white — texture bakes the colours
     this.baseMat.map = tex;
     this.baseMat.needsUpdate = true;
+  }
+
+  // Switch between light and dark globe themes.
+  setTheme(dark) {
+    this.darkMode = dark;
+    // Sky = near-black deep space; earth surface = distinct medium navy
+    this.scene.background = new THREE.Color(dark ? 0x030810 : 0xffffff);
+    if (this.rimMat)    this.rimMat.color.set(dark ? 0x2a3f5c : 0x9aa4b2);
+    if (this.outlines)  this.outlines.material.color.set(dark ? 0x4a6080 : 0x9aa4b2);
+    if (this.hl)        this.hl.material.color.set(dark ? 0x60a5fa : 0x1f6feb);
+    if (this.starField) this.starField.visible = dark;
+    if (this._ready) this._buildLandTexture();
   }
 
   _buildOutlines() {
