@@ -2,20 +2,20 @@
    projection.js — Cohort-component population projection (single year of age)
    Drives the year slider. Two scenarios:
      'current'  — today's fertility rate persists unchanged ("if trends hold")
-     'recovery' — UN-style gradual convergence toward replacement-ish levels
+     'recovery' — UN-style gradual convergence toward a long-run equilibrium
+                  TFR of ~1.7, matching the UN WPP 2024 medium-variant
+                  assumption for most countries by 2100.
    ========================================================================== */
 
 const START_YEAR = 2025;
 const END_YEAR = 2100;
+const LONG_RUN_TFR = 1.7;
 
-// TFR trajectory for a country in a given year under a scenario.
 function tfrAt(c, year, scenario) {
   if (scenario === 'current') return c.tfr;
-  // 'recovery': glide linearly toward a target by END_YEAR.
-  const target = c.tfr > REPLACEMENT_TFR ? REPLACEMENT_TFR
-               : (c.tfr < 1.8 ? 1.8 : c.tfr);
+
   const p = Math.min(1, Math.max(0, (year - START_YEAR) / (END_YEAR - START_YEAR)));
-  return c.tfr + (target - c.tfr) * p;
+  return c.tfr + (LONG_RUN_TFR - c.tfr) * p;
 }
 
 // Per-country mortality multiplier so lower-life-expectancy nations see
