@@ -2,27 +2,50 @@
    projection.js — Cohort-component population projection (single year of age)
    Drives the year slider. Two scenarios:
      'current'  — today's fertility rate persists unchanged ("if trends hold")
-     'recovery' — UN-style gradual convergence toward a long-run equilibrium
-                  TFR of ~1.7, matching the UN WPP 2024 medium-variant
-                  assumption for most countries by 2100.
+     'recovery' — UN WPP 2024 medium-variant style: each country converges
+                  toward a long-run TFR calibrated to its starting level.
+                  Ultra-low fertility countries (S. Korea, Japan) recover only
+                  to ~1.3–1.4; high-fertility SSA countries decline toward
+                  ~2.4–2.6 but remain above replacement. Mortality improves
+                  faster for lower-LE countries (more headroom). Methodology
+                  follows the UN cohort-component method. Net migration is
+                  omitted — this affects mainly USA, Germany, and Australia.
    ========================================================================== */
 
 const START_YEAR = 2025;
 const END_YEAR = 2100;
-const LONG_RUN_TFR = 1.7;
+
+// Country-specific long-run TFR target for the recovery scenario.
+// Calibrated to UN WPP 2024 medium-variant 2100 fertility assumptions:
+//   - Ultra-low (<1.0):  countries like S. Korea barely recover → ~1.30
+//   - Very low  (1–1.5): Japan, China, Italy → ~1.40
+//   - Below-rep (1.5–2.1): France, Germany, Brazil → ~1.65
+//   - Near-rep+ (2.1–4): significant decline, stays near replacement level
+//   - Very high  (≥4.0): large decline but SSA countries remain above 2.1
+function recoveryTFR(c) {
+  const t = c.tfr;
+  if (t < 1.0) return 1.30;
+  if (t < 1.5) return 1.40;
+  if (t < 2.1) return 1.65;
+  if (t < 4.0) return 2.10 + (t - 2.10) * 0.15; // e.g. Philippines 2.78→2.21, Pakistan 3.35→2.29
+  return        2.35 + (t - 4.00) * 0.08;         // e.g. Nigeria 5.1→2.44, Niger 6.7→2.56
+}
 
 function tfrAt(c, year, scenario) {
   if (scenario === 'current') return c.tfr;
-
+  const target = recoveryTFR(c);
   const p = Math.min(1, Math.max(0, (year - START_YEAR) / (END_YEAR - START_YEAR)));
-  return c.tfr + (LONG_RUN_TFR - c.tfr) * p;
+  return c.tfr + (target - c.tfr) * p;
 }
 
-// Per-country mortality multiplier so lower-life-expectancy nations see
-// higher death rates. Small annual improvement applied over time.
+// Per-country mortality multiplier. Annual improvement rate is tiered by
+// life expectancy: high-LE countries are near a ceiling; low-LE countries
+// have more headroom and improve faster (UN WPP 2024 assumption).
 function mortalityFactor(c, year) {
   const base = Math.max(0.6, Math.min(2.6, 82 / c.lifeExp));
-  const improve = Math.pow(0.996, year - START_YEAR); // ~0.4%/yr longevity gain
+  // improvement rate: ~0.2%/yr for LE>80, ~0.4% for LE 70-80, ~0.6% for LE<70
+  const rate = c.lifeExp > 80 ? 0.998 : c.lifeExp > 70 ? 0.996 : 0.994;
+  const improve = Math.pow(rate, year - START_YEAR);
   return base * improve;
 }
 
