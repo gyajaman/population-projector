@@ -117,7 +117,7 @@ const COUNTRIES = [
   { name: 'Uganda',                 label: 'Uganda',        iso: 'UG', pop: 50.0, tfr: 4.16, lifeExp: 68.5, u15: 0.460, o65: 0.022, med: 17.5 },
   { name: 'Mozambique',             label: 'Mozambique',    iso: 'MZ', pop: 34.6, tfr: 4.69, lifeExp: 63.8, u15: 0.448, o65: 0.028, med: 17.5 },
   { name: 'Ghana',                  label: 'Ghana',         iso: 'GH', pop: 34.4, tfr: 3.34, lifeExp: 65.7, u15: 0.378, o65: 0.037, med: 22.0 },
-  { name: 'Côte d'Ivoire',          label: 'Côte d'Ivoire', iso: 'CI', pop: 31.9, tfr: 4.23, lifeExp: 62.1, u15: 0.422, o65: 0.027, med: 18.5 },
+  { name: "Côte d'Ivoire",          label: "Côte d'Ivoire", iso: 'CI', pop: 31.9, tfr: 4.23, lifeExp: 62.1, u15: 0.422, o65: 0.027, med: 18.5 },
   { name: 'Madagascar',             label: 'Madagascar',    iso: 'MG', pop: 32.0, tfr: 3.91, lifeExp: 63.8, u15: 0.422, o65: 0.029, med: 19.0 },
   { name: 'Cameroon',               label: 'Cameroon',      iso: 'CM', pop: 29.1, tfr: 4.26, lifeExp: 64.0, u15: 0.428, o65: 0.031, med: 18.5 },
   { name: 'Angola',                 label: 'Angola',        iso: 'AO', pop: 37.9, tfr: 5.05, lifeExp: 64.8, u15: 0.462, o65: 0.026, med: 17.0 },
